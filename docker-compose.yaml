@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    volumes: # allow us get updates from our project into our docker container in realtime
+      - ./sunrepoapi:/usr/src/app
+      - ./scripts/entrypoint.sh:/usr/src/app/entrypoint.sh
+      - ./scripts/run-local-workers.sh:/usr/src/app/run-local-workers.sh
+      - static_volume_courseplatform:/usr/src/app/static/staticfiles
+      - media_volume_courseplatform:/usr/src/app/static/mediafiles
+    depends_on:
+      - postgres
+    env_file:
+      - ./.env
+   
+      
+  postgres:
+    image: postgres:12.0-alpine
+    ports:
+      - "5432"
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PG_HOST=${PG_HOST}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+volumes:
+  postgres_data:
+  static_volume_sunrepo:
+  media_volume_sunrepo:
